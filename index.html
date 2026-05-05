@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hybrid Replay Attack Dashboard - Pro Version</title>
+    <style>
+        :root {
+            --bg-color: #1a1a24;
+            --panel-bg: #252538;
+            --text-color: #e0e0e0;
+            --accent-blue: #4facfe;
+            --accent-red: #ff4b4b;
+            --accent-green: #00e676;
+            --accent-orange: #ffb74d;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- Sidebar Controls --- */
+        .sidebar {
+            width: 380px;
+            background-color: var(--panel-bg);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: 2px 0 15px rgba(0,0,0,0.6);
+            z-index: 10;
+            overflow-y: auto;
+        }
+
+        h2, h3 { margin: 0 0 10px 0; color: white; }
+
+        .data-box {
+            background: rgba(0,0,0,0.3);
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 4px solid var(--accent-blue);
+            font-family: monospace;
+            font-size: 14px;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .highlight-green { box-shadow: inset 0 0 15px rgba(0, 230, 118, 0.4); }
+        .highlight-red { box-shadow: inset 0 0 15px rgba(255, 75, 75, 0.4); }
+
+        .used-nonces-list {
+            height: 50px;
+            overflow-y: auto;
+            color: #aaa;
+            font-size: 12px;
+            background: #111;
+            padding: 5px;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 13px;
+        }
+        
+        .btn-send { background: var(--accent-blue); color: white; }
+        .btn-send:hover { background: #3b8cd9; }
+        .btn-attack { background: var(--accent-red); color: white; }
+        .btn-attack:hover { background: #cc3c3c; }
+        .btn-scenario { background: var(--accent-orange); color: #111; }
+        .btn-scenario:hover { background: #e09e3e; }
+
+        /* --- Step Control --- */
+        .step-control {
+            background: #111;
+            padding: 10px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #444;
+        }
+        .btn-next { background: var(--accent-green); color: black; display: none; padding: 5px 15px;}
+
+        /* --- Main Content & Diagram --- */
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 20px;
+            overflow: hidden;
+        }
+
+        .diagram-container {
+            position: relative;
+            width: 100%;
+            flex-grow: 1;
+            border: 2px solid #444;
+            border-radius: 8px;
+            background: white;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .diagram-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .svg-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        /* --- Terminal Logs --- */
+        .terminal {
+            height: 200px;
+            background: #0d0d12;
+            border-radius: 8px;
+            border: 1px solid #333;
+            padding: 10px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+            overflow-y: auto;
+            color: #00ff00;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+        }
+        .term-info { color: #88ccff; }
+        .term-warn { color: #ffb74d; }
+        .term-err { color: #ff4b4b; }
+        .term-success { color: #00e676; }
+
+        /* --- Tooltips --- */
+        .tooltip {
+            cursor: help;
+            border-bottom: 1px dotted #ccc;
+            position: relative;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 11px;
+            font-family: Arial;
+            font-weight: normal;
+            box-shadow: 0px 4px 6px rgba(0,0,0,0.5);
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <h2>Hybrid Security Control</h2>
+
+        <div class="step-control">
+            <label>
+                <input type="checkbox" id="toggle-step"> Step-by-Step Mode
+            </label>
+            <button id="btn-next" class="btn-next" onclick="executeNextStep()">Next ⏭</button>
+        </div>
+
+        <div class="data-box" id="box-sender">
+            <h3>📡 Sender State</h3>
+            <div>Next <span class="tooltip">Counter<span class="tooltiptext">Strictly increasing sequence number. Prevents out-of-order attacks.</span></span>: <span id="sender-counter" style="color:var(--accent-blue); font-weight:bold;">1</span></div>
+        </div>
+
+        <div class="data-box" id="box-receiver" style="border-color: var(--accent-green);">
+            <h3>🚘 Validation Module</h3>
+            <div>Last Accepted Counter: <span id="receiver-counter" style="color:var(--accent-green); font-weight:bold;">0</span></div>
+            <div style="margin-top: 5px;">Used <span class="tooltip">Nonces<span class="tooltiptext">Randomly generated number used only once per session. Survives memory resets.</span></span>:</div>
+            <div id="used-nonces" class="used-nonces-list">[Empty]</div>
+        </div>
+
+        <div class="data-box" id="box-attacker" style="border-color: var(--accent-red);">
+            <h3>🕵️ Attacker Memory</h3>
+            <div>Captured: <span id="attacker-mem">None</span></div>
+        </div>
+
+        <button class="btn-send" onclick="sendNormal()">🚀 1. Send Valid Message</button>
+        <button class="btn-attack" onclick="attackReplay()">⚠️ 2. Replay Intercepted Msg</button>
+
+        <hr style="border-color:#444; width:100%;">
+        <h3 style="font-size:14px; margin-bottom:0;">🧪 Edge Case Simulation</h3>
+        <button class="btn-scenario" onclick="simReboot()">🔌 Sim: Car Battery Resets (Counter=0)</button>
+        <button class="btn-scenario" onclick="simDesync()">📡 Sim: Key Fob Desync (Counter Jump)</button>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <div class="diagram-container">
+            <img src="diagram.png
+            " alt="Hybrid Framework Diagram">
+            
+            <svg class="svg-overlay" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid meet">
+                <!-- Path 1: Sender to Attacker Node -->
+                <path id="path-1" d="M 250 250 L 700 250" fill="none" stroke="rgba(255, 255, 0, 0.2)" stroke-width="3" stroke-dasharray="10, 5" />
+                
+                <!-- Path 2: Attacker Node to Receiver -->
+                <path id="path-2" d="M 700 250 L 700 450 L 1200 450" fill="none" stroke="rgba(255, 255, 0, 0.2)" stroke-width="3" stroke-dasharray="10, 5" />
+
+                <!-- The Dynamic Packet Group -->
+                <g id="packet-group" opacity="0">
+                    <rect x="-40" y="-15" width="80" height="30" rx="5" fill="#4facfe" id="packet-bg"/>
+                    <text x="0" y="4" font-family="monospace" font-size="12" fill="white" font-weight="bold" text-anchor="middle" id="packet-text">DATA</text>
+                    
+                    <animateMotion id="anim-path1" dur="1s" fill="freeze" begin="indefinite">
+                        <mpath href="#path-1"/>
+                    </animateMotion>
+                    <animateMotion id="anim-path2" dur="1.5s" fill="freeze" begin="indefinite">
+                        <mpath href="#path-2"/>
+                    </animateMotion>
+                </g>
+            </svg>
+        </div>
+
+        <!-- Live Terminal -->
+        <div id="terminal" class="terminal">
+            <div>SYSTEM BOOT... HYBRID VALIDATION ONLINE.</div>
+            <div>Awaiting transmissions...</div>
+        </div>
+    </div>
+
+    <script>
+        // --- State ---
+        let senderCounter = 1;
+        let receiverLastCounter = 0;
+        let usedNonces = new Set();
+        let attackerMemory = null;
+        
+        let isAnimating = false;
+        let currentTransmission = null; // Holds msg data during step-by-step
+        let stepPhase = 0; // 0=idle, 1=at attacker
+
+        // --- DOM ---
+        const term = document.getElementById('terminal');
+        const elSenderCount = document.getElementById('sender-counter');
+        const elRecvCount = document.getElementById('receiver-counter');
+        const elUsedNonces = document.getElementById('used-nonces');
+        const elAttMem = document.getElementById('attacker-mem');
+        const toggleStep = document.getElementById('toggle-step');
+        const btnNext = document.getElementById('btn-next');
+        const packetGroup = document.getElementById('packet-group');
+        const packetBg = document.getElementById('packet-bg');
+        const packetText = document.getElementById('packet-text');
+        const anim1 = document.getElementById('anim-path1');
+        const anim2 = document.getElementById('anim-path2');
+        const boxRecv = document.getElementById('box-receiver');
+
+        function logTerminal(msg, type="info") {
+            const div = document.createElement('div');
+            div.innerHTML = `> ${msg}`;
+            if(type === "info") div.className = "term-info";
+            if(type === "warn") div.className = "term-warn";
+            if(type === "err") div.className = "term-err";
+            if(type === "success") div.className = "term-success";
+            if(type === "system") div.style.color = "#ccc";
+            term.appendChild(div);
+            term.scrollTop = term.scrollHeight; // Auto-scroll
+        }
+
+        function generateNonce() {
+            return Math.floor(100000 + Math.random() * 900000);
+        }
+
+        function updateUI() {
+            elSenderCount.innerText = senderCounter;
+            elRecvCount.innerText = receiverLastCounter;
+            elUsedNonces.innerText = usedNonces.size === 0 ? "[Empty]" : Array.from(usedNonces).join(', ');
+            elAttMem.innerText = attackerMemory ? `[UNLOCK | C:${attackerMemory.counter} | N:${attackerMemory.nonce}]` : "None";
+        }
+
+        // --- Animation Logic ---
+        function startTransmission(msg, isAttack) {
+            if(isAnimating) return;
+            isAnimating = true;
+            currentTransmission = { msg, isAttack };
+
+            // Setup packet visuals
+            packetBg.setAttribute("fill", isAttack ? "var(--accent-red)" : "var(--accent-blue)");
+            packetText.textContent = `C:${msg.counter} N:${msg.nonce}`;
+            packetGroup.setAttribute("opacity", "1");
+
+            logTerminal(`[SENDER] Transmitting UNLOCK command. (Counter: ${msg.counter}, Nonce: ${msg.nonce})`, isAttack ? "warn" : "info");
+
+            // Play Path 1 (Sender -> Attacker)
+            anim1.beginElement();
+
+            setTimeout(() => {
+                logTerminal(`[ATTACKER] Packet intercepted in transit.`, "warn");
+                if(!isAttack) {
+                    attackerMemory = { ...msg }; // Attacker stores it
+                    updateUI();
+                }
+
+                if(toggleStep.checked) {
+                    // Pause for Step Mode
+                    stepPhase = 1;
+                    btnNext.style.display = "block";
+                    logTerminal(`[SYSTEM] Step-mode active. Paused at attacker node. Waiting for Next...`, "system");
+                } else {
+                    // Auto-continue
+                    executeNextStep();
+                }
+            }, 1000); // 1s dur for anim1
+        }
+
+        function executeNextStep() {
+            if(stepPhase === 1) {
+                btnNext.style.display = "none";
+                stepPhase = 0;
+            }
+
+            logTerminal(`[NETWORK] Forwarding packet to Validation Module...`, "system");
+            
+            // Play Path 2 (Attacker -> Receiver)
+            anim2.beginElement();
+
+            setTimeout(() => {
+                packetGroup.setAttribute("opacity", "0"); // Hide packet
+                isAnimating = false;
+                runValidation(currentTransmission.msg, currentTransmission.isAttack);
+            }, 1500); // 1.5s dur for anim2
+        }
+
+        // --- Validation Logic ---
+        function runValidation(msg, isAttack) {
+            logTerminal(`[RECEIVER] Packet arrived. Starting Hybrid Validation...`, "info");
+            
+            let counterPass = msg.counter > receiverLastCounter;
+            let noncePass = !usedNonces.has(msg.nonce);
+
+            // Log exact checks
+            if(counterPass) {
+                logTerminal(`  - GATE A (Counter): PASS (${msg.counter} > ${receiverLastCounter})`, "success");
+            } else {
+                logTerminal(`  - GATE A (Counter): FAIL (${msg.counter} is old/duplicate)`, "err");
+            }
+
+            if(noncePass) {
+                logTerminal(`  - GATE B (Nonce): PASS (${msg.nonce} is fresh)`, "success");
+            } else {
+                logTerminal(`  - GATE B (Nonce): FAIL (${msg.nonce} exists in memory)`, "err");
+            }
+
+            // Box Highlight effect
+            boxRecv.classList.remove("highlight-green", "highlight-red");
+            void boxRecv.offsetWidth; // trigger reflow
+
+            if (counterPass && noncePass) {
+                receiverLastCounter = msg.counter;
+                usedNonces.add(msg.nonce);
+                boxRecv.classList.add("highlight-green");
+                logTerminal(`[SYSTEM] Validation SUCCESS. Car Unlocked. 🔓`, "success");
+                if(!isAttack) senderCounter++;
+            } else {
+                boxRecv.classList.add("highlight-red");
+                logTerminal(`[SYSTEM] Validation FAILED. Attack Blocked! ❌`, "err");
+            }
+            logTerminal("--------------------------------------------------", "system");
+            updateUI();
+        }
+
+        // --- Button Triggers ---
+        function sendNormal() {
+            if(isAnimating) return;
+            let msg = { counter: senderCounter, nonce: generateNonce() };
+            startTransmission(msg, false);
+        }
+
+        function attackReplay() {
+            if(isAnimating) return;
+            if(!attackerMemory) {
+                alert("Attacker memory is empty! Send a normal message first to intercept.");
+                return;
+            }
+            startTransmission(attackerMemory, true);
+        }
+
+        function simReboot() {
+            receiverLastCounter = 0;
+            usedNonces.clear();
+            logTerminal(`[SYSTEM WARNING] Car Battery disconnected. Memory Wiped!`, "warn");
+            logTerminal(`[SYSTEM WARNING] Last Accepted Counter is now 0.`, "warn");
+            updateUI();
+        }
+
+        function simDesync() {
+            senderCounter += 5;
+            logTerminal(`[SYSTEM WARNING] Key Fob button pressed multiple times out of range.`, "warn");
+            logTerminal(`[SYSTEM WARNING] Sender Counter jumped ahead to ${senderCounter}.`, "warn");
+            updateUI();
+        }
+
+    </script>
+</body>
+</html>
