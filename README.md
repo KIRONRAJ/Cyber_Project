@@ -3,6 +3,8 @@
 # **Replay Attack Detection System (Hybrid Framework)**
 
 ---
+![Replay Attack Detection System Diagram](/diagram.png)
+---
 
 ## **1. sender.py**
 
