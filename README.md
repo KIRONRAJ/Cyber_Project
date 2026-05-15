@@ -7,7 +7,7 @@
 # ** New Update ( Week 6 ) **
 
 
-
+![Alt text](/figure3_simulation_architecture.svg)
 
 # Implementation (Modification Plan)
 
