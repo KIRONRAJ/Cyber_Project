@@ -1,6 +1,113 @@
-# Single file
+
+
 
 # **Replay Attack Detection System (Hybrid Framework)**
+
+
+# ** New Update ( Week 6 ) **
+
+
+
+
+# Implementation (Modification Plan)
+
+## Main Changes
+
+### 1. Session-Based Structure
+
+**Before:** 100 generic "iterations"
+
+**After:** 50 sessions per experiment
+
+- Each session = one realistic car interaction
+- 5 legitimate messages per session (UNLOCK, START, LOCK, etc.)
+- Then 4 attack attempts
+- Models actual usage pattern better
+
+### 2. Multiple Runs for Statistical Reliability
+
+**Before:** Run experiment once
+
+**After:** Run 30 independent experiments, average the results
+
+### 3. Three Metrics Instead of One
+
+**Before:** Only detection rate
+
+**After:**
+
+- **Detection Rate** - how many attacks blocked? (security measure)
+- **False Acceptance Rate** - how many got through? (reliability measure)
+- **Latency Overhead** - how much time does validation add? (performance measure)
+
+### 4. Better Data Output
+
+**Before:** Just prints numbers
+
+**After:**
+
+- Saves to CSV file (easy to import into Excel/analysis tools)
+- Generates 3 graphs (one per metric)
+- Organized results folder
+
+## What Stays the Same
+
+✅ All four validation modes (none, nonce, counter, hybrid)
+
+✅ Same attack types (delayed replay, multiple replay, out-of-order, counter-skip)
+
+✅ sender.py logic - unchanged
+
+✅ receiver.py validation - unchanged
+
+✅ attacker.py capture logic - mostly unchanged
+
+## To-Do
+
+Update main.py with new structure
+
+- Add session loops
+- Add timing measurement
+- Add CSV output
+- Test it works
+
+### Experiment Structure
+
+```python
+For each method (none, nonce, counter, hybrid):
+    Run 30 independent experiments
+    
+    In each experiment:
+        Run 50 sessions
+        
+        In each session:
+            Phase 1: Send 5 legitimate messages
+            Phase 2: Try 4 replay attacks
+            
+            Measure:
+            - Were attacks blocked?
+            - How long did validation take?
+    
+    After 30 experiments:
+        Average all results
+        Save to CSV
+        Make graphs
+```
+
+### Total Scale
+
+- 4 methods × 30 runs × 50 sessions = 6,000 sessions total
+- Each session has 5 legit + 4 attacks = 9 validations
+- Total validations: ~54,000
+
+
+
+
+
+
+
+
+
 
 ---
 ![Replay Attack Detection System Diagram](/diagram.png)
