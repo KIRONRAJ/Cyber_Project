@@ -108,7 +108,7 @@ For each method (none, nonce, counter, hybrid):
 
 
 
-
+###** OLD DIAGRAM **
 ---
 ![Replay Attack Detection System Diagram](/diagram.png)
 ---
