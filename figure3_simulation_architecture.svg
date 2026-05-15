@@ -1,0 +1,216 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 820" font-family="'Helvetica Neue', Arial, sans-serif">
+  <defs>
+    <marker id="arrowDark" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#1a202c"/>
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2F855A"/>
+    </marker>
+    <marker id="arrowRed" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#C53030"/>
+    </marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="2" dy="3" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.18"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="820" fill="white"/>
+
+  <!-- Title -->
+  <text x="600" y="48" text-anchor="middle" font-size="22" font-weight="600" fill="#1a202c">
+    Simulation Architecture
+  </text>
+  <text x="600" y="74" text-anchor="middle" font-size="13" fill="#4a5568">
+    Single-process Python simulation, executed on a single workstation
+  </text>
+
+  <!-- Outer process boundary box -->
+  <rect x="80" y="110" width="1040" height="540" rx="12" fill="none"
+        stroke="#A0AEC0" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="100" y="135" font-size="11" font-weight="600" fill="#718096" letter-spacing="1">
+    PYTHON PROCESS
+  </text>
+
+  <!-- Controller box (main.py) -->
+  <rect x="430" y="160" width="340" height="100" rx="10"
+        fill="#EDF2F7" stroke="#1a202c" stroke-width="2" filter="url(#shadow)"/>
+  <text x="600" y="195" text-anchor="middle" font-size="18" font-weight="600" fill="#1a202c">
+    main.py
+  </text>
+  <text x="600" y="220" text-anchor="middle" font-size="12" fill="#4a5568">
+    Experiment Controller
+  </text>
+  <text x="600" y="240" text-anchor="middle" font-size="11" fill="#4a5568">
+    Orchestrates sessions, captures, attacks, and metrics
+  </text>
+
+  <!-- Orchestration arrows from main to three modules -->
+  <path d="M 540 260 Q 540 290 220 300 L 220 340" fill="none" stroke="#1a202c" stroke-width="1.5"
+        marker-end="url(#arrowDark)" stroke-dasharray="4 3"/>
+  <path d="M 600 260 L 600 340" fill="none" stroke="#1a202c" stroke-width="1.5"
+        marker-end="url(#arrowDark)" stroke-dasharray="4 3"/>
+  <path d="M 660 260 Q 660 290 980 300 L 980 340" fill="none" stroke="#1a202c" stroke-width="1.5"
+        marker-end="url(#arrowDark)" stroke-dasharray="4 3"/>
+  <text x="345" y="295" font-size="10" fill="#718096" font-style="italic">orchestrates</text>
+
+  <!-- Sender module -->
+  <rect x="100" y="340" width="240" height="130" rx="10"
+        fill="#F0FFF4" stroke="#1a202c" stroke-width="2" filter="url(#shadow)"/>
+  <text x="220" y="372" text-anchor="middle" font-size="16" font-weight="600" fill="#1a202c">
+    sender.py
+  </text>
+  <text x="220" y="394" text-anchor="middle" font-size="12" fill="#4a5568">
+    Key Fob
+  </text>
+  <line x1="130" y1="408" x2="310" y2="408" stroke="#CBD5E0" stroke-width="1"/>
+  <text x="220" y="427" text-anchor="middle" font-size="10" fill="#4a5568">
+    generate_message()
+  </text>
+  <text x="220" y="445" text-anchor="middle" font-size="10" fill="#4a5568">
+    nonce + counter + command
+  </text>
+
+  <!-- Attacker module -->
+  <rect x="480" y="340" width="240" height="130" rx="10"
+        fill="#FFF5F5" stroke="#1a202c" stroke-width="2" filter="url(#shadow)"/>
+  <text x="600" y="372" text-anchor="middle" font-size="16" font-weight="600" fill="#1a202c">
+    attacker.py
+  </text>
+  <text x="600" y="394" text-anchor="middle" font-size="12" fill="#4a5568">
+    Adversary
+  </text>
+  <line x1="510" y1="408" x2="690" y2="408" stroke="#CBD5E0" stroke-width="1"/>
+  <text x="600" y="427" text-anchor="middle" font-size="10" fill="#4a5568">
+    capture()  |  replay()
+  </text>
+  <text x="600" y="445" text-anchor="middle" font-size="10" fill="#4a5568">
+    delayed, multiple, out-of-order
+  </text>
+
+  <!-- Receiver module -->
+  <rect x="860" y="340" width="240" height="130" rx="10"
+        fill="#F0FFF4" stroke="#1a202c" stroke-width="2" filter="url(#shadow)"/>
+  <text x="980" y="372" text-anchor="middle" font-size="16" font-weight="600" fill="#1a202c">
+    receiver.py
+  </text>
+  <text x="980" y="394" text-anchor="middle" font-size="12" fill="#4a5568">
+    Car ECU
+  </text>
+  <line x1="890" y1="408" x2="1070" y2="408" stroke="#CBD5E0" stroke-width="1"/>
+  <text x="980" y="427" text-anchor="middle" font-size="10" fill="#4a5568">
+    validate()
+  </text>
+  <text x="980" y="445" text-anchor="middle" font-size="10" fill="#4a5568">
+    none | nonce | counter | hybrid
+  </text>
+
+  <!-- Data flow arrows: sender to attacker (captured) -->
+  <path d="M 340 405 L 480 405" fill="none" stroke="#C53030" stroke-width="2"
+        marker-end="url(#arrowRed)" stroke-dasharray="5 3"/>
+  <text x="410" y="395" text-anchor="middle" font-size="10" fill="#C53030" font-style="italic">captured</text>
+
+  <!-- Data flow arrows: attacker to receiver (replay) -->
+  <path d="M 720 420 L 860 420" fill="none" stroke="#C53030" stroke-width="2"
+        marker-end="url(#arrowRed)"/>
+  <text x="790" y="412" text-anchor="middle" font-size="10" fill="#C53030" font-style="italic">replay</text>
+
+  <!-- Legitimate flow arrow (curved from sender directly to receiver, above attacker) -->
+  <path d="M 340 365 Q 600 320 860 365" fill="none" stroke="#2F855A" stroke-width="2"
+        marker-end="url(#arrowGreen)"/>
+  <text x="600" y="332" text-anchor="middle" font-size="10" fill="#2F855A" font-style="italic">legitimate message</text>
+
+  <!-- Results flow - arrows from modules back to main (results) -->
+  <path d="M 220 470 Q 220 525 540 545" fill="none" stroke="#1a202c" stroke-width="1.5"
+        marker-end="url(#arrowDark)"/>
+  <path d="M 600 470 L 600 545" fill="none" stroke="#1a202c" stroke-width="1.5"
+        marker-end="url(#arrowDark)"/>
+  <path d="M 980 470 Q 980 525 660 545" fill="none" stroke="#1a202c" stroke-width="1.5"
+        marker-end="url(#arrowDark)"/>
+  <text x="775" y="525" font-size="10" fill="#4a5568" font-style="italic">validation outcome + latency</text>
+
+  <!-- Results aggregation box -->
+  <rect x="430" y="545" width="340" height="80" rx="10"
+        fill="#FFFAF0" stroke="#1a202c" stroke-width="2" filter="url(#shadow)"/>
+  <text x="600" y="575" text-anchor="middle" font-size="14" font-weight="600" fill="#1a202c">
+    Metrics Aggregation
+  </text>
+  <text x="600" y="598" text-anchor="middle" font-size="11" fill="#4a5568">
+    Detection Rate  |  False Acceptance Rate  |  Latency Overhead
+  </text>
+  <text x="600" y="615" text-anchor="middle" font-size="10" fill="#4a5568" font-style="italic">
+    averaged across 30 independent runs
+  </text>
+
+  <!-- Output stage -->
+  <!-- CSV output -->
+  <rect x="280" y="685" width="240" height="80" rx="10"
+        fill="white" stroke="#1a202c" stroke-width="2" filter="url(#shadow)"/>
+  <text x="400" y="715" text-anchor="middle" font-size="14" font-weight="600" fill="#1a202c">
+    results.csv
+  </text>
+  <text x="400" y="738" text-anchor="middle" font-size="11" fill="#4a5568">
+    Raw experimental data
+  </text>
+  <text x="400" y="754" text-anchor="middle" font-size="10" fill="#4a5568" font-style="italic">
+    one row per (run, method, attack)
+  </text>
+
+  <!-- Plots output -->
+  <rect x="680" y="685" width="240" height="80" rx="10"
+        fill="white" stroke="#1a202c" stroke-width="2" filter="url(#shadow)"/>
+  <text x="800" y="715" text-anchor="middle" font-size="14" font-weight="600" fill="#1a202c">
+    matplotlib plots
+  </text>
+  <text x="800" y="738" text-anchor="middle" font-size="11" fill="#4a5568">
+    Comparison visualisations
+  </text>
+  <text x="800" y="754" text-anchor="middle" font-size="10" fill="#4a5568" font-style="italic">
+    bar charts, error bars
+  </text>
+
+  <!-- Arrows from aggregation to outputs -->
+  <path d="M 530 625 Q 460 660 410 685" fill="none" stroke="#1a202c" stroke-width="1.5"
+        marker-end="url(#arrowDark)"/>
+  <path d="M 670 625 Q 740 660 790 685" fill="none" stroke="#1a202c" stroke-width="1.5"
+        marker-end="url(#arrowDark)"/>
+
+  <!-- Legend -->
+  <rect x="100" y="685" width="160" height="80" rx="8"
+        fill="#F7FAFC" stroke="#CBD5E0" stroke-width="1"/>
+  <text x="180" y="703" text-anchor="middle" font-size="10" font-weight="600" fill="#4a5568" letter-spacing="0.5">
+    LEGEND
+  </text>
+  <line x1="115" y1="716" x2="140" y2="716" stroke="#2F855A" stroke-width="2"/>
+  <text x="148" y="720" font-size="10" fill="#4a5568">Legitimate flow</text>
+  <line x1="115" y1="733" x2="140" y2="733" stroke="#C53030" stroke-width="2" stroke-dasharray="4 2"/>
+  <text x="148" y="737" font-size="10" fill="#4a5568">Attack flow</text>
+  <line x1="115" y1="750" x2="140" y2="750" stroke="#1a202c" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="148" y="754" font-size="10" fill="#4a5568">Control flow</text>
+
+  <!-- Hardware annotation (top right) -->
+  <rect x="940" y="685" width="160" height="80" rx="8"
+        fill="#F7FAFC" stroke="#CBD5E0" stroke-width="1"/>
+  <text x="1020" y="703" text-anchor="middle" font-size="10" font-weight="600" fill="#4a5568" letter-spacing="0.5">
+    HARDWARE
+  </text>
+  <text x="955" y="720" font-size="10" fill="#4a5568">Intel i9-9900K</text>
+  <text x="955" y="735" font-size="10" fill="#4a5568">32 GB RAM</text>
+  <text x="955" y="750" font-size="10" fill="#4a5568">Windows 11 / Python</text>
+
+  <!-- Footer caption -->
+  <text x="600" y="800" text-anchor="middle" font-size="11" fill="#718096" font-style="italic">
+    All entities execute in a single Python process; communication is modelled as in-process message passing
+  </text>
+</svg>
